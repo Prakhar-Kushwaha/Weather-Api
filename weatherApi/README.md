@@ -54,6 +54,40 @@ This is a **React-based Weather App** built with **Vite**, providing fast develo
 <br>
 <br>
 
+3. **Deployment**
+After change for deploying changes to Github pages : 
+```bash
+
+    #Install Dependencies
+    npm install vite-plugin-gh-pages --save-dev
+
+    #import githubPages in Vite.config.js
+    import { defineConfig } from 'vite';
+    import react from '@vitejs/plugin-react';
+    import { ghPages } from 'vite-plugin-gh-pages';
+
+    export default defineConfig({
+    plugins: [react(), ghPages()],
+    base: '/Weather-Api/', // Replace with your repository name
+    });
+
+
+    # Update scripts , in vite.config.js
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "deploy": "vite build && vite-gh-pages"
+    }
+
+    ##Run the following Comonds
+    npm run deploy 
+    # It will run the script defined in vite.config.js
+
+
+
+```
+
 ---
 
 **Author**: Prakhar Kushwaha  
