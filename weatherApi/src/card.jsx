@@ -13,68 +13,116 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
 import SunnyIcon from '@mui/icons-material/Sunny';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import Button from '@mui/material/Button';
-
-
-const ExpandMore = styled((props) => {
-    const { expand, ...other } = props;
-    return <IconButton {...other} />;
-  })(({ theme }) => ({
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-    variants: [
-      {
-        props: ({ expand }) => !expand,
-        style: {
-          transform: 'rotate(0deg)',
-        },
-      },
-      {
-        props: ({ expand }) => !!expand,
-        style: {
-          transform: 'rotate(180deg)',
-        },
-      },
-    ],
-  }));
+import { red } from '@mui/material/colors';
+import { styled } from '@mui/material/styles';
+import React from 'react';
+import Search from './search.jsx';
 
 
 
- //Test api - "https://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=XXXXXXXXXXXXXXXXXXXXXXXXXXX"
-
-  const WeatherApi = "https://api.openweathermap.org/data/2.5/weather"; // ?q={city name}&appid={apiKey}
-  const ApiKey = process.env.REACT_APP_ApiKey;
-
-  let [city , setCity] = useState("London");
-
-  const apiUrl = `${WeatherApi}?q=${city},uk&appid=${ApiKey}`;
-
-  let [weather , setWeather] = useState({
-
-  });
-
-   let response = async() => {
-     let res = await fetch(apiUrl);
-     let data = await res.json();
-   }
 
 export default function WeatherCard(){
-        const [expanded, setExpanded] = React.useState(false);
 
-        const handleExpandClick = () => {
-            setExpanded(!expanded);
-        };
+    const ExpandMore = styled((props) => {
+        const { expand, ...other } = props;
+        return <IconButton {...other} />;
+      })(({ theme }) => ({
+        marginLeft: 'auto',
+        transition: theme.transitions.create('transform', {
+          duration: theme.transitions.duration.shortest,
+        }),
+        variants: [
+          {
+            props: ({ expand }) => !expand,
+            style: {
+              transform: 'rotate(0deg)',
+            },
+          },
+          {
+            props: ({ expand }) => !!expand,
+            style: {
+              transform: 'rotate(180deg)',
+            },
+          },
+        ],
+      }));
 
-         const today = new Date().toLocaleDateString();
+      const [expanded, setExpanded] = React.useState(false);
+      const today = new Date().toLocaleDateString();
 
+      const handleExpandClick = () => {
+        setExpanded(!expanded);
+    };
+    
+    
+    
+     //Test api - "https://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=XXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    
+      const WeatherApi = "https://api.openweathermap.org/data/2.5/weather"; // ?q={city name}&appid={apiKey}
+      const ApiKey = import.meta.env.VITE_ApiKey;
+    
+      let [city , setCity] = useState("Wonderland");
+    
+    
+      let [weather , setWeather] = useState({
+        city : "----",
+        temp : 0,
+        temp_min : 0,
+        temp_max : 0,
+        description : "",
+        humidity : 0,
+        feelslike : 0,
+      });
+    
+       let response = async(cityName) => {
+        const apiUrl = `${WeatherApi}?q=${cityName}&appid=${ApiKey}`;
+        try{
+                console.log("API URL: " + apiUrl);
+                let res = await fetch(apiUrl);
+                let data = await res.json();
+                if(!res.ok){
+                    throw new Error("City not found");
+                }
+                console.log(data);
+                setWeather({
+                    city : data.name,
+                    temp : (data.main.temp - 273.15 ).toFixed(2),
+                    temp_min : (data.main.temp_min - 273.15 ).toFixed(2),
+                    temp_max : (data.main.temp_max   - 273.15) .toFixed(2),
+                    description : data.weather[0].description,
+                    humidity : data.main.humidity,
+                    feelslike : (data.main.feels_like - 273.15) .toFixed(2),
+                });
+                //Format state of Info gained // Change 'weather' object state
+        }catch (err){
+                console.error( "Weather API Error", err);
+                setWeather({
+                    city : "----",
+                    temp : 0,
+                    temp_min : 0,
+                    temp_max : 0,
+                    description : "",
+                    humidity : 0,
+                    feelslike : 0,
+                })
+       }
+    };
+
+       const handleSubmit = (cityName) => {
+            setCity(cityName);
+            console.log("City Name: " + cityName);
+            response(cityName);
+        }; 
+       
+      
 return (
-    <Card sx={{ maxWidth: 345 }}>
+    <Card sx={{ width: { xs: '90%', sm: 340 },maxWidth: 450, margin : 'auto', marginTop : '20px'}}>
             <CardHeader 
                     avatar = {
                             <Avatar sx= {{bgcolor : red[500]}}
                                     aria-label = "weather">
+                                    {weather.icon ? <img src={`http://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                                     alt="icon" /> : null}
                             </Avatar>
                     }
                     action = {
@@ -89,16 +137,47 @@ return (
             <CardMedia
                     component = "img"
                     height = "194"
-                    image = "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-                    alt = "Paella dish"
+                    image = 
+                    {weather.humidity >= 80?
+                        Images.Rainy :
+                        weather.temp >= 30 ?
+                        Images.Hot :
+                        Images.Cold
+                    }
+                    alt = "Weather Image"
             />
             <CardContent>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        {/* Weather info here */}
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                        City      : {weather.city}
                     </Typography>
-                    <Button variant="outlined">Outlined</Button>
-                        Get Weather Info
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                     <span>
+                        Temperature : {weather.temp}&deg;C
+                        &nbsp;
+                        {weather.humidity >=80 ? WeatherIcons.Rain :
+                        weather.temp >=30?
+                        WeatherIcons.Hot :
+                        WeatherIcons.Cold}
+                        &nbsp;
+                     </span> 
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                        Feels Like : {weather.feelslike}&deg;C
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                        Humidity : {weather.humidity}%
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                        Min Temp : {weather.temp_min}&deg;C
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                        Max Temp : {weather.temp_max}&deg;C
+                    </Typography>
+                    
+                    
             </CardContent>
+
+            <Search onSubmit={handleSubmit} />
 
             <CardActions disableSpacing>
                  <ExpandMore
@@ -118,7 +197,8 @@ return (
                         .....................................................
                     </Typography>
                     <Typography sx={{ marginBottom: 2 }}>
-                        
+                        Description     : {weather.description}
+                        <br></br>
                         EveryDay is great . Just go and enjoy .☺
                     </Typography>
                     </CardContent>
@@ -131,7 +211,7 @@ return (
 
 
 const Images = {
-    Hot : "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    Hot : "https://images.unsplash.com/photo-1593558628703-535b2556320b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     Cold : "https://images.unsplash.com/photo-1457269449834-928af64c684d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2ludGVyfGVufDB8fDB8fHww" ,
     Rainy : "https://images.unsplash.com/photo-1583054994298-cc68ddaca862?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDIzfHx8ZW58MHx8fHx8",
 }

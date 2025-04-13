@@ -48,8 +48,8 @@ export default function BasicTextFields() {
       </div>
 
       <div>
-        <Search />
         <WeatherCard />
+        {/* Main Weather Card */}
       </div>
       </ThemeProvider>
     );
